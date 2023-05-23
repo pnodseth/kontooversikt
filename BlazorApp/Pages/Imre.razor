@@ -1,0 +1,30 @@
+@page "/imre"
+@inject AccountsService AccountsService
+@inject IConfiguration Configuration
+
+<PageTitle>Imre</PageTitle>
+
+@if (_account == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <div>
+        <p>Balance: @_account.Available kr </p>
+    </div>
+}
+
+@code {
+    private Account? _account;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var service = new AccountsService(Configuration);
+        await service.Connect();
+        _account = await service.GetAccountInfo("Imre");
+        
+    }
+}
