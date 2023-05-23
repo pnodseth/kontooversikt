@@ -16,6 +16,17 @@
 
     <ItemGroup>
       <PackageReference Include="IdentityModel" Version="6.1.0" />
+      <PackageReference Include="MudBlazor" Version="6.2.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css.map" />
+      <_ContentIncludedByDefault Remove="Shared\Components\Loading.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Shared\Components\" />
     </ItemGroup>
 
 </Project>

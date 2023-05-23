@@ -104,14 +104,14 @@ public class AccountsService
             throw new Exception("Imre is null");
         }
 
-        Trace.WriteLine($"AccountResult:{accountResult}");
+        // Trace.WriteLine($"AccountResult:{accountResult}");
 
 
         var spesificAccountResponse =
             await this.HttpClient.GetAsync($"api/v1/Accounts/{test.AccountId}");
         var spesificAccountResult = await spesificAccountResponse.Content.ReadAsStringAsync();
         var account = JsonSerializer.Deserialize<Account>(spesificAccountResult, serializeOptions);
-        Trace.WriteLine($"SpesificAccountResult:{spesificAccountResult}");
+        // Trace.WriteLine($"SpesificAccountResult:{spesificAccountResult}");
         return account;
     }
 }

@@ -1,16 +1,15 @@
-@page "/imre"
+@page "/klara"
 @inject AccountsService AccountsService
 @inject IConfiguration Configuration
-
-<PageTitle>Imre</PageTitle>
+<PageTitle>Klaras konto</PageTitle>
 
 @if (_account == null)
 {
-    <Loading />
+    <Loading></Loading>
 }
 else
 {
-    <KontoOversikt Name="Imre" Available="_account.Available"></KontoOversikt>
+    <KontoOversikt Name="Klara" Available="_account.Available"></KontoOversikt>
 }
 
 @code {
@@ -20,7 +19,7 @@ else
     {
         var service = new AccountsService(Configuration);
         await service.Connect();
-        _account = await service.GetAccountInfo("Imre");
+        _account = await service.GetAccountInfo("Klara");
     }
 
 }
