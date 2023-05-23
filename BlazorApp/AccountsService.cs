@@ -85,7 +85,7 @@ public class AccountsService
         Trace.WriteLine($"CustomerResult:{customerResult}");
     }
 
-    public async Task<Account?> GetAccountInfo(string name)
+    public async Task<AccountItem?> GetAccountInfo(string name)
     {
         // The application retrieves the customer's accounts.
         var accountResponse = await this.HttpClient.GetAsync("api/v1/Accounts");
@@ -94,7 +94,7 @@ public class AccountsService
 
         var serializeOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
         var accountsList = JsonSerializer.Deserialize<AccountsList>(accountResult, serializeOptions);
@@ -104,14 +104,13 @@ public class AccountsService
             throw new Exception("Imre is null");
         }
 
-        Trace.WriteLine($"AccountResult:{accountResult}");
+        // Trace.WriteLine($"AccountResult:{accountResult}");
 
 
         var spesificAccountResponse =
             await this.HttpClient.GetAsync($"api/v1/Accounts/{test.AccountId}");
         var spesificAccountResult = await spesificAccountResponse.Content.ReadAsStringAsync();
-        var account = JsonSerializer.Deserialize<Account>(spesificAccountResult, serializeOptions);
-        Trace.WriteLine($"SpesificAccountResult:{spesificAccountResult}");
-        return account;
+        var account = JsonSerializer.Deserialize<AccountResponse>(spesificAccountResult, serializeOptions);
+        return account?.Item;
     }
 }

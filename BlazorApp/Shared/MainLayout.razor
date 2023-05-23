@@ -1,19 +1,26 @@
 ﻿@inherits LayoutComponentBase
 
 <PageTitle>BlazorApp</PageTitle>
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+<MudThemeProvider IsDarkMode="true" Theme="_myCustomTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+<MudLayout>
+    <MudMainContent >
+        <MudContainer MaxWidth="MaxWidth.Medium">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    MudTheme _myCustomTheme = new()
+    {
+        Typography = new Typography()
+        {
+            Default = new Default()
+            {
+                FontFamily = new[] { "Fjalla One", "Helvetica", "Arial", "sans-serif" }
+            }
+        }
+    };
+}

@@ -1,16 +1,17 @@
-@page "/imre"
+@page "/klara"
 @inject AccountsService AccountsService
 @inject IConfiguration Configuration
+@implements IDisposable
 
-<PageTitle>Imre</PageTitle>
+<PageTitle>Klaras konto</PageTitle>
 
 @if (_account == null)
 {
-    <Loading/>
+    <Loading></Loading>
 }
 else
 {
-    <KontoOversikt Name="Imre" Available="_available"></KontoOversikt>
+    <KontoOversikt Name="Klara" Available="_available"></KontoOversikt>
 }
 
 @code {
@@ -22,7 +23,7 @@ else
     {
         var service = new AccountsService(Configuration);
         await service.Connect();
-        _account = await service.GetAccountInfo("Imre");
+        _account = await service.GetAccountInfo("Klara");
         if (_account != null)
         {
             _available = Decimal.ToInt32(_account.Available);
@@ -31,14 +32,13 @@ else
             {
                 await InvokeAsync(async () =>
                 {
-                    _account = await service.GetAccountInfo("Imre");
+                    _account = await service.GetAccountInfo("Klara");
                     if (_account != null) _available = Decimal.ToInt32(_account.Available);
                     StateHasChanged();
                 });
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(20));
         }
     }
-    
     public void Dispose()
     {
         _timer?.Dispose();

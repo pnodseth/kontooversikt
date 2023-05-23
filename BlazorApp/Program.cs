@@ -2,8 +2,10 @@ using BlazorApp;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using BlazorApp.Data;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMudServices();
 
 // Add services to the container.
 builder.Services.AddRazorPages();
