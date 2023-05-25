@@ -1,46 +1,6 @@
 @page "/klara"
-@inject AccountsService AccountsService
-@inject IConfiguration Configuration
-@implements IDisposable
+@using BlazorApp.Store
+@inject NavigationManager NavigationManager
+@inject AppState AppState
 
-<PageTitle>Klaras konto</PageTitle>
-
-@if (_account == null)
-{
-    <Loading></Loading>
-}
-else
-{
-    <KontoOversikt Name="Klara" Available="_available"></KontoOversikt>
-}
-
-@code {
-    private AccountItem? _account;
-    private int _available;
-    private Timer? _timer;
-    
-    protected override async Task OnInitializedAsync()
-    {
-        var service = new AccountsService(Configuration);
-        await service.Connect();
-        _account = await service.GetAccountInfo("Klara");
-        if (_account != null)
-        {
-            _available = Decimal.ToInt32(_account.Available);
-
-            _timer = new Timer(async (e) =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    _account = await service.GetAccountInfo("Klara");
-                    if (_account != null) _available = Decimal.ToInt32(_account.Available);
-                    StateHasChanged();
-                });
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(20));
-        }
-    }
-    public void Dispose()
-    {
-        _timer?.Dispose();
-    }
-}
+<Barn />

@@ -1,10 +1,25 @@
-﻿@inherits LayoutComponentBase
+﻿@using BlazorApp.Store
+@inherits LayoutComponentBase
+@inject AppState AppState
 
-<PageTitle>BlazorApp</PageTitle>
+<PageTitle>KontoApp</PageTitle>
 <MudThemeProvider IsDarkMode="true" Theme="_myCustomTheme"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 <MudLayout>
+    <MudAppBar Elevation="1" Class="pt-4 pb-4">
+        <MudGrid>
+            <MudItem sm="4">
+                <MudText Align="Align.Center"></MudText>
+            </MudItem>
+            <MudItem sm="4">
+                <MudText Align="Align.Center" Typo="Typo.h3">@AppState.CurrentName</MudText>
+            </MudItem>
+            <MudItem sm="4">
+                <MudText Align="Align.Center"></MudText>
+            </MudItem>
+        </MudGrid>
+    </MudAppBar>
     <MudMainContent >
         <MudContainer MaxWidth="MaxWidth.Medium">
             @Body

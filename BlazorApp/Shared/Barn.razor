@@ -1,0 +1,18 @@
+@using BlazorApp.Store
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+
+<PageTitle>@AppState.CurrentName</PageTitle>
+<MudGrid Justify="Justify.Center">
+    <UkesOppgaver Name="@AppState.CurrentName"/>
+    <KontoOversikt Name="@AppState.CurrentName"></KontoOversikt>
+</MudGrid>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        AppState.SetCurrentNameFromUri(NavigationManager);
+    }
+
+}

@@ -1,0 +1,73 @@
+@using BlazorApp.Data
+@using BlazorApp.Data.Models
+@inject OppgaveService OppgaveService
+
+<MudItem sm="12">
+    <MudGrid Class="mt-8">
+        <MudItem sm="12">
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="Ukesoppgaver">
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@(_remainingTasks is 0 ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassBottom)" class="mr-3" Color="_remainingTasks is 0 ? Color.Success : Color.Warning"></MudIcon>
+                            <MudBadge Content="@_remainingTasks" Overlap="false" Color="Color.Error" Bordered="true">
+                                <MudText>UkesOppgaver</MudText>
+                            </MudBadge>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudGrid>
+                            @foreach (Oppgave oppgave in Oppgaver)
+                            {
+                                <MudItem>
+                                    <MudChip Variant="Variant.Outlined" Color="@(oppgave.Done ? Color.Success : Color.Warning)" Size="Size.Large">
+                                        <MudText Typo="Typo.body1" Class="pr-2">@oppgave.Title</MudText>
+                                        <MudIcon Icon="@(oppgave.Done ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassEmpty)" Title="Favorite"/>
+                                    </MudChip>
+                                </MudItem>
+                            }
+                            <MudItem Style="display: flex;align-items: center;justify-content: center;flex-grow: 2;">
+                                <MudText Typo="Typo.h4">@totalAmount kr</MudText>
+                            </MudItem>
+                        </MudGrid>
+                        <MudGrid Class="mt-4">
+                            <MudItem sm="3"></MudItem>
+                            <MudItem sm="6" Style="text-align: center">
+                                <MudButton Variant="Variant.Outlined" Disabled="_remainingTasks > 0" Size="Size.Large">
+                                    Gi meg penger
+                                    <MudIcon Icon="@Icons.Material.Filled.Favorite" Class="pl-2" Color="Color.Success"></MudIcon>
+                                </MudButton>
+                            </MudItem>
+                            <MudItem sm="3"></MudItem>
+                        </MudGrid>
+
+
+                    </ChildContent>
+
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudItem>
+
+    </MudGrid>
+</MudItem>
+
+@code {
+
+    [Parameter]
+    public string Name { get; set; } = "";
+
+    public List<Oppgave> Oppgaver { get; set; } = new List<Oppgave>();
+    public int _remainingTasks { get; set; }
+    public int totalAmount { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Oppgaver = OppgaveService.GetTaskTemplates();
+        Console.WriteLine(Oppgaver[1].Title);
+
+        _remainingTasks = Oppgaver.Where(o => o.Done == false).ToList().Count;
+        totalAmount = Oppgaver.Sum(o => o.Amount);
+        Console.WriteLine(totalAmount);
+    }
+
+}

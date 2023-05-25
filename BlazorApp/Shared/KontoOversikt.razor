@@ -1,18 +1,52 @@
-<MudGrid Style="height: calc(100vh - var(--mud-appbar-height))" Justify="Justify.Center">
-        <MudItem sm="12">
-            <MudText Typo="Typo.h4" Align="Align.Center">@Name</MudText>
-        </MudItem>
-        <MudItem sm="12">
-            <MudText Align="Align.Center" Typo="Typo.h3">På konto</MudText>
-            <MudText Typo="Typo.h1" Align="Align.Center" Style="font-size: 12rem; font-weight: bold" Color="Color.Tertiary">@Available kr </MudText>
-        </MudItem>
-    </MudGrid>
+@inject IConfiguration Configuration
+
+@if (_account is null)
+{
+    <Loading/>
+}
+else
+{
+    <MudItem sm="12">
+        <MudText Align="Align.Center" Typo="Typo.h3">På konto</MudText>
+        <MudText Typo="Typo.h1" Align="Align.Center" Style="font-size: 12rem; font-weight: bold" Color="Color.Tertiary">@Math.Round(_account.Available) kr </MudText>
+    </MudItem>
+}
+
+
+
 @code {
 
     [Parameter]
-    public string Name { get; set; } = "";
+    public required string Name { get; set; } = "";
 
-    [Parameter]
-    public int Available { get; set; } = 0;
+    private AccountItem? _account;
+    private int _available;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var service = new AccountsService(Configuration);
+        await service.Connect();
+        _account = await service.GetAccountInfo(Name);
+        if (_account != null)
+        {
+            _available = Decimal.ToInt32(_account.Available);
+
+            _timer = new Timer(async (e) =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    _account = await service.GetAccountInfo("Imre");
+                    if (_account != null) _available = Decimal.ToInt32(_account.Available);
+                    StateHasChanged();
+                });
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(20));
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
 
 }
