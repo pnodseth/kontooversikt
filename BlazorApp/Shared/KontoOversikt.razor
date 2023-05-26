@@ -1,16 +1,17 @@
+@using BlazorApp.Store
 @inject IConfiguration Configuration
-
-@if (_account is null)
+@inject AppState AppState
+@*@if (GetAccount() is null)
 {
     <Loading/>
-}
-else
+}*@
+@*else
 {
+}*@
     <MudItem sm="12">
         <MudText Align="Align.Center" Typo="Typo.h3">På konto</MudText>
-        <MudText Typo="Typo.h1" Align="Align.Center" Style="font-size: 12rem; font-weight: bold" Color="Color.Tertiary">@Math.Round(_account.Available) kr </MudText>
+        <MudText Typo="Typo.h1" Align="Align.Center" Style="font-size: 12rem; font-weight: bold" Color="Color.Tertiary">@AppState.AvailableImre kr </MudText>
     </MudItem>
-}
 
 
 
@@ -18,35 +19,21 @@ else
 
     [Parameter]
     public required string Name { get; set; } = "";
-
-    private AccountItem? _account;
-    private int _available;
-    private Timer? _timer;
-
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    public AccountItem? Account { get; set; }
+    
+    protected override void OnInitialized()
     {
-        var service = new AccountsService(Configuration);
-        await service.Connect();
-        _account = await service.GetAccountInfo(Name);
-        if (_account != null)
-        {
-            _available = Decimal.ToInt32(_account.Available);
-
-            _timer = new Timer(async (e) =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    _account = await service.GetAccountInfo("Imre");
-                    if (_account != null) _available = Decimal.ToInt32(_account.Available);
-                    StateHasChanged();
-                });
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(20));
-        }
+        AppState.OnChange += StateHasChanged;
     }
 
+    public int GetAccount()
+    {
+        return AppState.CurrentName == "Imre" ? AppState.AvailableImre : AppState.AvailableKlara;
+    }
+    
     public void Dispose()
     {
-        _timer?.Dispose();
+        AppState.OnChange -= StateHasChanged;
     }
-
 }

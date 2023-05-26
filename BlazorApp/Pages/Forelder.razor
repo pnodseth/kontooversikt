@@ -1,0 +1,72 @@
+@page "/Forelder"
+@using BlazorApp.Store
+@using BlazorApp.Data
+@using BlazorApp.Data.Models
+@inject AppState AppState
+@inject ChoreService ChoreService
+<MudGrid>
+    <MudItem sm-6>
+        <MudText>Imre</MudText>
+        <MudText>Husarbeid denne uken:</MudText>
+
+        @foreach (var chore in ChoresThisWeek)
+        {
+            <MudGrid>
+                <MudItem>@chore.Title</MudItem>
+                <MudItem>@chore.Amount</MudItem>
+                @if (chore.Status == ChoreStatus.Pending)
+                {
+                    <MudItem >
+                        <MudButton @onclick="() => ApproveChore(chore.Id)">Godkjenn</MudButton>
+                    </MudItem>
+                }
+                @if (chore.Status == ChoreStatus.Done)
+                {
+                    <MudItem>
+                        <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+        @if (ChoresThisWeek.Count == 0)
+        {
+            <MudCard>
+                <MudButton @onclick="CreateChoresThisWeek">Generer husarbeid denne uken</MudButton>
+            </MudCard>
+        }
+    </MudItem>
+</MudGrid>
+
+@code {
+    private string Child { get; set; } = "Imre";
+    private List<Chore> ChoresThisWeek { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ChoresThisWeek = await ChoreService.GetChoresThisWeek(Child);
+        StateHasChanged();
+    }
+
+    public async Task CreateChoresThisWeek()
+    {
+        ChoresThisWeek = await ChoreService.CreateChoresThisWeek("Imre");
+        StateHasChanged();
+    }
+
+    private async Task ApproveChore(int id)
+    {
+        try
+        {
+            Console.WriteLine("saving");
+            await ChoreService.SetChoreStatus(id, ChoreStatus.Done);
+            ChoresThisWeek = await ChoreService.GetChoresThisWeek(Child);
+            StateHasChanged();
+            Console.WriteLine("saved");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+}

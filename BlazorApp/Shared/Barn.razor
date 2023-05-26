@@ -1,18 +1,67 @@
 @using BlazorApp.Store
 @inject NavigationManager NavigationManager
 @inject AppState AppState
+@inject IConfiguration Configuration
+
 
 <PageTitle>@AppState.CurrentName</PageTitle>
 <MudGrid Justify="Justify.Center">
     <UkesOppgaver Name="@AppState.CurrentName"/>
-    <KontoOversikt Name="@AppState.CurrentName"></KontoOversikt>
+    <KontoOversikt Name="@AppState.CurrentName"  account="@_account"></KontoOversikt>
 </MudGrid>
 
 @code {
 
+    
+    
+    private AccountItem? _account;
+    private int _available;
+    private Timer? _timer;
+    
     protected override void OnInitialized()
     {
+        AppState.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
         AppState.SetCurrentNameFromUri(NavigationManager);
+        var service = new AccountsService(Configuration);
+        await service.Connect();
+        var account = await service.GetAccountInfo(AppState.CurrentName);
+        if (account != null)
+        {
+            if (AppState.CurrentName == "Imre")
+            {
+                AppState.AvailableImre = Decimal.ToInt32(account.Available);
+            }
+            else
+            {
+                AppState.AvailableKlara = Decimal.ToInt32(account.Available);
+            }
+
+            /*_timer = new Timer(async (e) =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    account = await service.GetAccountInfo(AppState.CurrentName);
+                    if (AppState.CurrentName == "Imre")
+                    {
+                        AppState.ImresAccount = account;
+                    }
+                    else
+                    {
+                        AppState.KlarasAccount = account;
+                    }
+                });
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(20));*/
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        AppState.OnChange -= StateHasChanged;
     }
 
 }

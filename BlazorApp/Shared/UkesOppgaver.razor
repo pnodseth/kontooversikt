@@ -1,6 +1,8 @@
 @using BlazorApp.Data
 @using BlazorApp.Data.Models
-@inject OppgaveService OppgaveService
+@using BlazorApp.Store
+@inject ChoreService ChoreService
+@inject AppState AppState;
 
 <MudItem sm="12">
     <MudGrid Class="mt-8">
@@ -9,39 +11,52 @@
                 <MudExpansionPanel Text="Ukesoppgaver">
                     <TitleContent>
                         <div class="d-flex">
-                            <MudIcon Icon="@(_remainingTasks is 0 ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassBottom)" class="mr-3" Color="_remainingTasks is 0 ? Color.Success : Color.Warning"></MudIcon>
-                            <MudBadge Content="@_remainingTasks" Overlap="false" Color="Color.Error" Bordered="true">
+                            @if (RemainingTasks == 0 && Chores.Count > 0)
+                            {
+                                <MudIcon Icon="@(RemainingTasks is 0 ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassBottom)" class="mr-3" Color="RemainingTasks is 0 ? Color.Success : Color.Warning"></MudIcon>
+                            }
+                            @if (RemainingTasks > 0)
+                            {
+                                <MudBadge Content="@RemainingTasks" Overlap="false" Color="Color.Error" Bordered="true">
+                                    <MudText>UkesOppgaver</MudText>
+                                </MudBadge>
+                            }
+                            else
+                            {
                                 <MudText>UkesOppgaver</MudText>
-                            </MudBadge>
+                            }
                         </div>
                     </TitleContent>
                     <ChildContent>
-                        <MudGrid>
-                            @foreach (Oppgave oppgave in Oppgaver)
-                            {
-                                <MudItem>
-                                    <MudChip Variant="Variant.Outlined" Color="@(oppgave.Done ? Color.Success : Color.Warning)" Size="Size.Large">
-                                        <MudText Typo="Typo.body1" Class="pr-2">@oppgave.Title</MudText>
-                                        <MudIcon Icon="@(oppgave.Done ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassEmpty)" Title="Favorite"/>
-                                    </MudChip>
+                        @if (Chores.Count > 0)
+                        {
+                            <MudGrid>
+                                @foreach (Chore oppgave in Chores)
+                                {
+                                    <UkesOppgave Oppgave="oppgave"/>
+                                }
+                                <MudItem Style="display: flex;align-items: center;justify-content: center;flex-grow: 2;">
+                                    <MudText Typo="Typo.h4">@TotalAmount kr</MudText>
                                 </MudItem>
-                            }
-                            <MudItem Style="display: flex;align-items: center;justify-content: center;flex-grow: 2;">
-                                <MudText Typo="Typo.h4">@totalAmount kr</MudText>
-                            </MudItem>
-                        </MudGrid>
-                        <MudGrid Class="mt-4">
-                            <MudItem sm="3"></MudItem>
-                            <MudItem sm="6" Style="text-align: center">
-                                <MudButton Variant="Variant.Outlined" Disabled="_remainingTasks > 0" Size="Size.Large">
-                                    Gi meg penger
-                                    <MudIcon Icon="@Icons.Material.Filled.Favorite" Class="pl-2" Color="Color.Success"></MudIcon>
-                                </MudButton>
-                            </MudItem>
-                            <MudItem sm="3"></MudItem>
-                        </MudGrid>
-
-
+                            </MudGrid>
+                            <MudGrid Class="mt-4">
+                                <MudItem sm="3"></MudItem>
+                                <MudItem sm="6" Style="text-align: center">
+                                    <MudButton Variant="Variant.Filled" Disabled="RemainingTasks > 0" Size="Size.Large" Color="RemainingTasks > 0 ? Color.Transparent : Color.Success" @onclick="Payout">
+                                        Gi meg penger
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem sm="3"></MudItem>
+                            </MudGrid>
+                        }
+                        else
+                        {
+                            <MudGrid>
+                                <MudItem>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="CreateChoresThisWeek">Lag oppgaver til meg</MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        }
                     </ChildContent>
 
                 </MudExpansionPanel>
@@ -55,19 +70,52 @@
 
     [Parameter]
     public string Name { get; set; } = "";
+    [Parameter]
+    public EventCallback UpdateAvailable { get; set; } 
 
-    public List<Oppgave> Oppgaver { get; set; } = new List<Oppgave>();
-    public int _remainingTasks { get; set; }
-    public int totalAmount { get; set; }
-
+    private List<Chore> Chores { get; set; } = new();
+    private int RemainingTasks { get; set; }
+    private int TotalAmount { get; set; }
+    
     protected override void OnInitialized()
     {
-        Oppgaver = OppgaveService.GetTaskTemplates();
-        Console.WriteLine(Oppgaver[1].Title);
+        AppState.OnChange += StateHasChanged;
+    }
 
-        _remainingTasks = Oppgaver.Where(o => o.Done == false).ToList().Count;
-        totalAmount = Oppgaver.Sum(o => o.Amount);
-        Console.WriteLine(totalAmount);
+    protected override async Task OnInitializedAsync()
+    {
+        Chores = await ChoreService.GetChoresThisWeek(Name);
+
+        RemainingTasks = Chores.Where(o => o.Status == ChoreStatus.Ready).ToList().Count;
+        TotalAmount = Chores.Sum(o => o.Amount);
+        Console.WriteLine(TotalAmount);
+    }
+
+    private async Task CreateChoresThisWeek()
+    {
+        Chores = await ChoreService.CreateChoresThisWeek(Name);
+        RemainingTasks = Chores.Where(o => o.Status == ChoreStatus.Ready).ToList().Count;
+        TotalAmount = Chores.Sum(o => o.Amount);
+        StateHasChanged();
+    }
+
+    private void Payout()
+    {
+        Console.WriteLine("paying...");
+        if (AppState.CurrentName == "Imre")
+        {
+                var newTotalSum = AppState.AvailableImre + TotalAmount;
+                Console.WriteLine($"New total sum: {newTotalSum}");
+                AppState.AvailableImre = newTotalSum;
+                Console.WriteLine(AppState.AvailableImre);
+                StateHasChanged();
+            
+        }
+    }
+    
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
     }
 
 }

@@ -1,0 +1,76 @@
+@using BlazorApp.Data.Models
+@using BlazorApp.Data
+@using BlazorApp.Store
+@inject ChoreService ChoreService
+@inject AppState AppState
+<MudItem>
+    <MudButton @onclick="TogglePopOver">
+        <MudChip Variant="Variant.Outlined" Color="@Color" Size="Size.Large" Origin="@AnchorOrigin">
+            <MudText Typo="Typo.body1" Class="pr-2">@Oppgave.Title</MudText>
+            <MudIcon Icon="@(Oppgave.Status == ChoreStatus.Done ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassEmpty)" Title="Favorite"/>
+        </MudChip>
+        <MudPopover OverflowBehavior="OverflowBehavior.FlipNever" Open="PopoverOpen" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Class="pa-4">
+            <MudButton Variant="Variant.Outlined" Color="Color.Success" @onclick="SetPending">Fullført!</MudButton>
+        </MudPopover>
+    </MudButton>
+</MudItem>
+
+@code {
+
+    [Parameter]
+    public Chore? Oppgave { get; set; }
+
+    private bool PopoverOpen { get; set; }
+    private Origin TransformOrigin { get; set; } = Origin.TopLeft;
+    private Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
+    private Color Color;
+
+    protected override void OnInitialized()
+    {
+        AppState.OnChange += StateHasChanged;
+        
+        if (Oppgave.Status == ChoreStatus.Ready)
+        {
+            Color = Color.Warning;
+        } else if (Oppgave.Status == ChoreStatus.Pending)
+        {
+            Color = Color.Info;
+        }
+        else
+        {
+            Color = Color.Success;
+        }
+    }
+
+    private void TogglePopOver()
+    {
+        PopoverOpen = !PopoverOpen;
+        Console.WriteLine("toggled");
+    }
+
+    private async Task SetPending()
+    {
+        Console.WriteLine("setting pending");
+        if (Oppgave is null) return;
+        
+        try
+        {
+            await ChoreService.SetChoreStatus(Oppgave.Id, ChoreStatus.Pending);
+            Oppgave.Status = ChoreStatus.Pending;
+            Color = Color.Info;
+            TogglePopOver();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Something went wrong while saving chore status:");
+            Console.WriteLine(ex.Message);
+        }
+    }
+    
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+}
