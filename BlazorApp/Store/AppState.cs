@@ -7,6 +7,7 @@ public class AppState
     private string _currentName = "";
     private int _availableImre;
     private int _availableKlara;
+    private bool _loading;
 
 
     public string CurrentName
@@ -35,6 +36,16 @@ public class AppState
         set
         {
             _availableKlara = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public bool Loading
+    {
+        get => _loading;
+        set
+        {
+            _loading = value;
             NotifyStateChanged();
         }
     }

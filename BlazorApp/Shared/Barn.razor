@@ -11,12 +11,8 @@
 </MudGrid>
 
 @code {
-
-    
-    
     private AccountItem? _account;
     private int _available;
-    private Timer? _timer;
     
     protected override void OnInitialized()
     {
@@ -26,6 +22,7 @@
     protected override async Task OnInitializedAsync()
     {
         AppState.SetCurrentNameFromUri(NavigationManager);
+        AppState.Loading = true;
         var service = new AccountsService(Configuration);
         await service.Connect();
         var account = await service.GetAccountInfo(AppState.CurrentName);
@@ -39,28 +36,12 @@
             {
                 AppState.AvailableKlara = Decimal.ToInt32(account.Available);
             }
-
-            /*_timer = new Timer(async (e) =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    account = await service.GetAccountInfo(AppState.CurrentName);
-                    if (AppState.CurrentName == "Imre")
-                    {
-                        AppState.ImresAccount = account;
-                    }
-                    else
-                    {
-                        AppState.KlarasAccount = account;
-                    }
-                });
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(20));*/
         }
+        AppState.Loading = false;
     }
 
     public void Dispose()
     {
-        _timer?.Dispose();
         AppState.OnChange -= StateHasChanged;
     }
 
