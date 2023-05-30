@@ -1,4 +1,5 @@
 @using BlazorApp.Store
+@using BlazorApp.Data.Models
 @inject IConfiguration Configuration
 @inject AppState AppState
 @if (AppState.Loading)
@@ -29,7 +30,7 @@ else
 
     public int GetAccount()
     {
-        return AppState.CurrentName == "Imre" ? AppState.AvailableImre : AppState.AvailableKlara;
+        return AppState.CurrentChild == Children.Imre ? AppState.AvailableImre : AppState.AvailableKlara;
     }
     
     public void Dispose()

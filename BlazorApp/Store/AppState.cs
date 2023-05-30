@@ -1,21 +1,22 @@
+using BlazorApp.Data.Models;
 using Microsoft.AspNetCore.Components;
 
 namespace BlazorApp.Store;
 
 public class AppState
 {
-    private string _currentName = "";
+    private Children _currentChild;
     private int _availableImre;
     private int _availableKlara;
     private bool _loading;
 
 
-    public string CurrentName
+    public Children CurrentChild
     {
-        get => _currentName;
+        get => _currentChild;
         set
         {
-            _currentName = value;
+            _currentChild = value;
             NotifyStateChanged();
         } 
     }
@@ -59,6 +60,28 @@ public class AppState
         var uri = new Uri(navigationManager.Uri);
         var path = uri.AbsolutePath;
         path = path.TrimStart('/');
-        CurrentName = Char.ToUpper(path[0]) + path.Substring(1);
+        var name = Char.ToUpper(path[0]) + path.Substring(1);
+        if (name == "Imre")
+        {
+            CurrentChild = Children.Imre;
+        } else if (name == "Klara")
+        {
+            CurrentChild = Children.Klara;
+        }
+    }
+
+    public string GetNameString()
+    {
+        return CurrentChild == Children.Imre ? "Imre" : "Klara";
+    }
+
+    public Children GetChildFromName(string name)
+    {
+        if (name == "Imre")
+        {
+            return Children.Imre;
+        }
+
+        return Children.Klara;
     }
 }

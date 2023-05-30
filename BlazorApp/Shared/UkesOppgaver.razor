@@ -3,15 +3,16 @@
 @using BlazorApp.Store
 @inject ChoreService ChoreService
 @inject AppState AppState;
+@inject AccountsService AccountsService
 
 <MudItem sm="12">
     <MudGrid Class="mt-8">
         <MudItem sm="12">
-            <MudExpansionPanels>
-                <MudExpansionPanel Text="Ukesoppgaver">
+            <MudExpansionPanels >
+                <MudExpansionPanel Text="Ukesoppgaver" >
                     <TitleContent>
                         <div class="d-flex">
-                            @if (RemainingTasks == 0 && Chores.Count > 0)
+                            @if (RemainingTasks == 0 && WeeklyChores?.Chores.Count > 0)
                             {
                                 <MudIcon Icon="@(RemainingTasks is 0 ? Icons.Material.Filled.Check : Icons.Material.Filled.HourglassBottom)" class="mr-3" Color="RemainingTasks is 0 ? Color.Success : Color.Warning"></MudIcon>
                             }
@@ -28,25 +29,36 @@
                         </div>
                     </TitleContent>
                     <ChildContent>
-                        @if (Chores.Count > 0)
+                        @if (WeeklyChores is not null && WeeklyChores.Completed)
                         {
                             <MudGrid>
-                                @foreach (Chore oppgave in Chores)
+                                <MudItem>
+                                    Bra jobba! Du har gjort alle oppgavene dine denne uken!
+                                </MudItem>
+                            </MudGrid>
+                            @if (!WeeklyChores.IsPaid)
+                            {
+                                <MudGrid Class="mt-4">
+                                    <MudItem sm="3"></MudItem>
+                                    <MudItem sm="6" Style="text-align: center">
+                                        <MudButton Variant="Variant.Filled" Disabled="RemainingTasks > 0" Size="Size.Large" Color="RemainingTasks > 0 ? Color.Transparent : Color.Success" @onclick="Payout">
+                                            Gi meg penger
+                                        </MudButton>
+                                    </MudItem>
+                                    <MudItem sm="3"></MudItem>
+                                </MudGrid>
+                            }
+                        }
+                        else if (WeeklyChores?.Chores.Count > 0)
+                        {
+                            <MudGrid>
+                                @foreach (Chore oppgave in WeeklyChores.Chores)
                                 {
                                     <UkesOppgave Oppgave="oppgave"/>
                                 }
                                 <MudItem Style="display: flex;align-items: center;justify-content: center;flex-grow: 2;">
                                     <MudText Typo="Typo.h4">@TotalAmount kr</MudText>
                                 </MudItem>
-                            </MudGrid>
-                            <MudGrid Class="mt-4">
-                                <MudItem sm="3"></MudItem>
-                                <MudItem sm="6" Style="text-align: center">
-                                    <MudButton Variant="Variant.Filled" Disabled="RemainingTasks > 0" Size="Size.Large" Color="RemainingTasks > 0 ? Color.Transparent : Color.Success" @onclick="Payout">
-                                        Gi meg penger
-                                    </MudButton>
-                                </MudItem>
-                                <MudItem sm="3"></MudItem>
                             </MudGrid>
                         }
                         else
@@ -73,7 +85,7 @@
     [Parameter]
     public EventCallback UpdateAvailable { get; set; } 
 
-    private List<Chore> Chores { get; set; } = new();
+    private WeeklyChores? WeeklyChores { get; set; }
     private int RemainingTasks { get; set; }
     private int TotalAmount { get; set; }
     
@@ -84,32 +96,42 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Chores = await ChoreService.GetChoresThisWeek(Name);
+        WeeklyChores = await ChoreService.GetChoresThisWeek(AppState.CurrentChild);
 
-        RemainingTasks = Chores.Where(o => o.Status == ChoreStatus.Ready).ToList().Count;
-        TotalAmount = Chores.Sum(o => o.Amount);
-        Console.WriteLine(TotalAmount);
+        if (WeeklyChores != null) RemainingTasks = WeeklyChores.Chores.Where(o => o.Status == ChoreStatus.Ready).ToList().Count;
+        if (WeeklyChores != null) TotalAmount = WeeklyChores.Chores.Sum(o => o.Amount);
     }
 
     private async Task CreateChoresThisWeek()
     {
-        Chores = await ChoreService.CreateChoresThisWeek(Name);
-        RemainingTasks = Chores.Where(o => o.Status == ChoreStatus.Ready).ToList().Count;
-        TotalAmount = Chores.Sum(o => o.Amount);
+        WeeklyChores = await ChoreService.CreateWeeklyChores(Name);
+        RemainingTasks = WeeklyChores.Chores.Where(o => o.Status == ChoreStatus.Ready).ToList().Count;
+        TotalAmount = WeeklyChores.Chores.Sum(o => o.Amount);
         StateHasChanged();
     }
 
-    private void Payout()
+    private async Task Payout()
     {
-        Console.WriteLine("paying...");
-        if (AppState.CurrentName == "Imre")
+        if (WeeklyChores is null) return;
+        
+        if (AppState.CurrentChild == Children.Imre)
         {
                 var newTotalSum = AppState.AvailableImre + TotalAmount;
                 Console.WriteLine($"New total sum: {newTotalSum}");
                 AppState.AvailableImre = newTotalSum;
                 Console.WriteLine(AppState.AvailableImre);
+            try
+            {
+                await AccountsService.TransferFromMainAccount(AppState.CurrentChild, TotalAmount, "Ukesoppgaver fullført");
+                await ChoreService.SetWeeklyChoresPaid(WeeklyChores.Id, TotalAmount);
                 StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             
+
         }
     }
     

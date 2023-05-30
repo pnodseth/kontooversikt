@@ -9,7 +9,10 @@ public class MyDbContext : DbContext
         : base(options)
     { }
 
-    public DbSet<Chore> Chores { get; set; }
-    
-    
+    public DbSet<Chore> Chores { get; set; } = null!;
+    public DbSet<WeeklyChores> WeeklyChoresEnumerable { get; set; } = null!;
+    public DbSet<StreakChallenge> StreakChallenges { get; set; } = null!;
+    public DbSet<StreakChallengeDate> StreakChallengesDates { get; set; } = null!;
+
+
 }

@@ -8,60 +8,86 @@
     <MudItem sm-6>
         <MudText>Imre</MudText>
         <MudText>Husarbeid denne uken:</MudText>
+        @if (WeeklyChoresImre is not null)
+        {
+            @foreach (var chore in WeeklyChoresImre.Chores)
+            {
+                <MudGrid>
+                    <MudItem>@chore.Title</MudItem>
+                    <MudItem>@chore.Amount</MudItem>
+                    @if (chore.Status == ChoreStatus.Pending)
+                    {
+                        <MudItem >
+                            <MudButton @onclick="() => ApproveChore(chore.Id, WeeklyChoresImre)">Godkjenn</MudButton>
+                        </MudItem>
+                    }
+                    @if (chore.Status == ChoreStatus.Done)
+                    {
+                        <MudItem>
+                            <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        }
+        
+        
 
-        @foreach (var chore in ChoresThisWeek)
-        {
-            <MudGrid>
-                <MudItem>@chore.Title</MudItem>
-                <MudItem>@chore.Amount</MudItem>
-                @if (chore.Status == ChoreStatus.Pending)
+
+    </MudItem>
+    <MudItem>
+        @if (WeeklyChoresKlara is not null)
                 {
-                    <MudItem >
-                        <MudButton @onclick="() => ApproveChore(chore.Id)">Godkjenn</MudButton>
-                    </MudItem>
+                    @foreach (var chore in WeeklyChoresKlara.Chores)
+                    {
+                        <MudGrid>
+                            <MudItem>@chore.Title</MudItem>
+                            <MudItem>@chore.Amount</MudItem>
+                            @if (chore.Status == ChoreStatus.Pending)
+                            {
+                                <MudItem >
+                                    <MudButton @onclick="() => ApproveChore(chore.Id, WeeklyChoresKlara)">Godkjenn</MudButton>
+                                </MudItem>
+                            }
+                            @if (chore.Status == ChoreStatus.Done)
+                            {
+                                <MudItem>
+                                    <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
                 }
-                @if (chore.Status == ChoreStatus.Done)
-                {
-                    <MudItem>
-                        <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
-                    </MudItem>
-                }
-            </MudGrid>
-        }
-        @if (ChoresThisWeek.Count == 0)
-        {
-            <MudCard>
-                <MudButton @onclick="CreateChoresThisWeek">Generer husarbeid denne uken</MudButton>
-            </MudCard>
-        }
     </MudItem>
 </MudGrid>
 
 @code {
-    private string Child { get; set; } = "Imre";
-    private List<Chore> ChoresThisWeek { get; set; } = new();
+    private WeeklyChores? WeeklyChoresImre { get; set; }
+    private WeeklyChores? WeeklyChoresKlara { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        ChoresThisWeek = await ChoreService.GetChoresThisWeek(Child);
+        WeeklyChoresImre = await ChoreService.GetChoresThisWeek(AppState.GetChildFromName("Imre"));
+        WeeklyChoresKlara = await ChoreService.GetChoresThisWeek(AppState.GetChildFromName("Klara"));
         StateHasChanged();
     }
 
-    public async Task CreateChoresThisWeek()
-    {
-        ChoresThisWeek = await ChoreService.CreateChoresThisWeek("Imre");
-        StateHasChanged();
-    }
 
-    private async Task ApproveChore(int id)
+    private async Task ApproveChore(int id, WeeklyChores weeklyChores)
     {
         try
         {
             Console.WriteLine("saving");
             await ChoreService.SetChoreStatus(id, ChoreStatus.Done);
-            ChoresThisWeek = await ChoreService.GetChoresThisWeek(Child);
+    // todo: Check if I need to fetch chores again for state to be updated correctly.
             StateHasChanged();
-            Console.WriteLine("saved");
+
+            if (weeklyChores.Chores.Sum(e => e.Status == ChoreStatus.Done ? 1 : 0) == weeklyChores.Chores.Count)
+            {
+                Console.WriteLine("All weekly chores are done!");
+                await ChoreService.SetWeeklyChoresDone(weeklyChores.Id);
+            }
+
         }
         catch (Exception ex)
         {

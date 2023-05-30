@@ -1,0 +1,28 @@
+@using BlazorApp.Data.Models
+<MudItem sm="4" Style="display: flex; align-items: stretch">
+    <MudPaper Style="display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
+        <MudCardHeader >@Challenge.Title</MudCardHeader>
+        <MudCardContent>
+            <MudText>@Challenge.Description</MudText>
+            <MudText> Streak: @Challenge.StreakNumberForCompleted dager på rad</MudText>
+
+        </MudCardContent>
+        <MudCardActions Style="justify-content: space-between;">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => OnCreateStreakChallenge(Challenge)">Ta utfordring!</MudButton>
+            <MudText Typo="Typo.h5"> @Challenge.AmountOnCompletion kr</MudText>
+        </MudCardActions>
+    </MudPaper>
+</MudItem>
+
+@code {
+    [Parameter]
+    public required StreakChallenge Challenge { get; set; }
+    
+    [Parameter]
+    public EventCallback<StreakChallenge> CreateStreakChallenge { get; set; }
+
+    private async Task OnCreateStreakChallenge(StreakChallenge challenge)
+    {
+        await CreateStreakChallenge.InvokeAsync(challenge);
+    }
+}

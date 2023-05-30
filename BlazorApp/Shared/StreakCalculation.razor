@@ -1,0 +1,54 @@
+@using BlazorApp.Data.Models
+<MudContainer>
+    <MudText Typo="Typo.h6">Streak</MudText>
+    <MudGrid>
+        <MudItem>
+            <MudGrid Justify="Justify.SpaceBetween">
+                @{
+                    var streakCount = StreakChallenge.GetCurrentStreak();
+                    var count = 0;
+                }
+                @foreach (var date in StreakChallenge.DatesCompleted.OrderByDescending(x => x.DateCompleted))
+                {
+                    if (count >= streakCount)
+                    {
+                        break;
+                    }
+
+                    switch (date.Status)
+                    {
+                        case ChoreStatus.Pending:
+
+                            <MudText>PENDING</MudText>
+                            break;
+                        case ChoreStatus.Done:
+                            <MudText>COMPLETED</MudText>
+                            break;
+                    }
+                    count++;
+                }
+            </MudGrid>
+
+        </MudItem>
+        @if (StreakChallenge.DatesCompleted.All(date => date.DateCompleted.Date != DateTime.Today))
+        {
+            <MudItem>
+                <MudButton Color="Color.Success" Variant="Variant.Outlined" @onclick="() => OnAddStreakDate(StreakChallenge.Id)">Fullført</MudButton>
+            </MudItem>
+            
+        }
+    </MudGrid>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public required StreakChallenge StreakChallenge { get; set; }
+    
+    [Parameter]
+    public EventCallback<int> AddStreakDate { get; set; }
+    
+    private async Task OnAddStreakDate(int id)
+    {
+        await AddStreakDate.InvokeAsync(id);
+    }
+}

@@ -18,8 +18,8 @@ public class Chore
     [Required]
     [Range(2023,2030)]
     public int Year { get; set; }
-    public bool Done { get; set; }
     public ChoreStatus Status { get; set; }
+    public DateTime CompletedDate { get; set; } 
 
     public Chore(string title, int amount)
     {
@@ -34,5 +34,6 @@ public enum ChoreStatus
 {
     Ready,
     Pending,
-    Done
+    Done,
+    Rejected
 }

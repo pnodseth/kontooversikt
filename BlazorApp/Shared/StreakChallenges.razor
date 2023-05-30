@@ -1,0 +1,96 @@
+@using BlazorApp.Data
+@using BlazorApp.Data.Models
+@using BlazorApp.Store
+@inject AppState AppState
+@inject StreakChallengeService StreakChallengeService
+
+@if (_activeChallenges.Count == 0)
+{
+    <MudItem sm="12">
+        <MudExpansionPanels>
+            <MudExpansionPanel>
+                <TitleContent>Streak Challenges!</TitleContent>
+                <ChildContent>
+                    <MudGrid>
+                        @foreach (var challenge in _templateChallenges)
+                        {
+                            <StreakChallengeTemplate Challenge="challenge" CreateStreakChallenge="CreateStreakChallenge"></StreakChallengeTemplate>
+                        }
+                    </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudItem>
+}
+else
+{
+    <MudItem sm="6">
+        @foreach (var streakChallenge in _activeChallenges)
+        {
+            <MudCard Outlined="true" Elevation="2">
+                <MudCardHeader>
+                    <MudText Class="mr-4">Streak Challenge:</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h5">@streakChallenge.Title</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (streakChallenge.HasAchievedTargetStreak)
+                    {
+                        <MudText GutterBottom="true">Du har fullført, gratulerer! Bra jobba :) :) </MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="() => Payout(streakChallenge.Id)">FÅ PREMIEN</MudButton>
+                    }
+                    else
+                    {
+                    <MudText Align="Align.Center">@streakChallenge.Description</MudText>
+                        <StreakCalculation StreakChallenge="streakChallenge" AddStreakDate="AddStreakDate"></StreakCalculation>
+                    }
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudItem>
+}
+
+@code {
+
+    private List<StreakChallenge> _activeChallenges = new();
+    private List<StreakChallenge>? _templateChallenges;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _activeChallenges = await StreakChallengeService.GetActiveChallenges(AppState.CurrentChild);
+        _templateChallenges = await StreakChallengeService.GetStreakChallengeTemplates();
+        Console.WriteLine($"active: {_activeChallenges}");
+    }
+
+    private async Task CreateStreakChallenge(StreakChallenge challenge)
+    {
+        challenge.Child = AppState.CurrentChild;
+        challenge.IsActive = true;
+        challenge.StartsAt = DateOnly.FromDateTime(DateTime.Now);
+
+        try
+        {
+            await StreakChallengeService.CreateStreakChallenge(challenge);
+            _activeChallenges = await StreakChallengeService.GetActiveChallenges(AppState.CurrentChild);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public async Task AddStreakDate(int id)
+    {
+        await StreakChallengeService.AddStreakDate(id);
+        _activeChallenges = await StreakChallengeService.GetActiveChallenges(AppState.CurrentChild);
+        StateHasChanged();
+    }
+
+    private async Task Payout(int id)
+    {
+        await StreakChallengeService.Payout(id);
+        _activeChallenges = await StreakChallengeService.GetActiveChallenges(AppState.CurrentChild);
+        StateHasChanged();
+    }
+
+}

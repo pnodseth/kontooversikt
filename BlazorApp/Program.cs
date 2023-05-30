@@ -1,6 +1,4 @@
 using BlazorApp;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using BlazorApp.Data;
 using BlazorApp.Store;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +12,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<ChoreService>();
+builder.Services.AddScoped<StreakChallengeService>();
 builder.Services.AddScoped<AccountsService>();
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseInMemoryDatabase("MyDatabase"));

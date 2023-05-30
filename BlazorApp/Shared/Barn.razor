@@ -1,18 +1,20 @@
 @using BlazorApp.Store
+@using BlazorApp.Data.Models
 @inject NavigationManager NavigationManager
 @inject AppState AppState
 @inject IConfiguration Configuration
+@inject AccountsService AccountsService
 
 
-<PageTitle>@AppState.CurrentName</PageTitle>
+<PageTitle>@AppState.CurrentChild</PageTitle>
 <MudGrid Justify="Justify.Center">
-    <UkesOppgaver Name="@AppState.CurrentName"/>
-    <KontoOversikt Name="@AppState.CurrentName"  account="@_account"></KontoOversikt>
+    @*<UkesOppgaver Name="@AppState.GetNameString()"/>*@
+    <StreakChallenges></StreakChallenges>
+    <KontoOversikt Name="@AppState.GetNameString()"  account="@_account"></KontoOversikt>
 </MudGrid>
 
 @code {
     private AccountItem? _account;
-    private int _available;
     
     protected override void OnInitialized()
     {
@@ -23,12 +25,12 @@
     {
         AppState.SetCurrentNameFromUri(NavigationManager);
         AppState.Loading = true;
-        var service = new AccountsService(Configuration);
-        await service.Connect();
-        var account = await service.GetAccountInfo(AppState.CurrentName);
+        
+        await AccountsService.Connect();
+        var account = await AccountsService.GetAccountInfo(AppState.GetNameString());
         if (account != null)
         {
-            if (AppState.CurrentName == "Imre")
+            if (AppState.CurrentChild == Children.Imre)
             {
                 AppState.AvailableImre = Decimal.ToInt32(account.Available);
             }

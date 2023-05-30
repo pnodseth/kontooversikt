@@ -1,5 +1,9 @@
 using System.Diagnostics;
+using System.Net;
+using System.Text;
 using System.Text.Json;
+using BlazorApp.Data.Models;
+using BlazorApp.Store;
 using IdentityModel.Client;
 
 namespace BlazorApp;
@@ -7,12 +11,14 @@ namespace BlazorApp;
 public class AccountsService
 {
     private readonly IConfiguration _configuration;
-    
+    private readonly AppState _appState;
+
     private HttpClient HttpClient { get; set; } = new HttpClient();
 
-    public AccountsService(IConfiguration configuration)
+    public AccountsService(IConfiguration configuration, AppState appState)
     {
         _configuration = configuration;
+        _appState = appState;
         var myCreator = new TextWriterTraceListener(Console.Out);
         Trace.Listeners.Add(myCreator);
     }
@@ -41,6 +47,7 @@ public class AccountsService
         {
             throw new Exception("ClientId or ClientSecret is missing");
         }
+
         var tokenRequest = new ClientCredentialsTokenRequest()
         {
             Address = discoveryDocumentResponse.TokenEndpoint,
@@ -66,7 +73,8 @@ public class AccountsService
         {
             throw new Exception("ApiBaseAddress is missing");
         }
-        this.HttpClient = new HttpClient()
+
+        HttpClient = new HttpClient()
         {
             BaseAddress = new Uri(apiBaseAddress)
         };
@@ -108,9 +116,58 @@ public class AccountsService
 
 
         var spesificAccountResponse =
-            await this.HttpClient.GetAsync($"api/v1/Accounts/{test.AccountId}");
+            await HttpClient.GetAsync($"api/v1/Accounts/{test.AccountId}");
         var spesificAccountResult = await spesificAccountResponse.Content.ReadAsStringAsync();
         var account = JsonSerializer.Deserialize<AccountResponse>(spesificAccountResult, serializeOptions);
         return account?.Item;
     }
+
+    public async Task TransferFromMainAccount(Children child, int amount, string message)
+    {
+        // todo: Move to environment variables
+        var mainAccountId = "E30501EA273E7A838E2C9522239917FF";
+        var imreAccountId = "23BF8A2419C862D26F891AD49BAA93B3";
+        var klaraAccountId = "B44FBC5DAA9EBE0873BBEED87EE99CA4";
+
+        var transferToId = child == Children.Imre ? imreAccountId : klaraAccountId;
+
+        await this.Connect();
+
+        var data = new TransferDto(mainAccountId, transferToId, message, amount);
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+        var jsonString = JsonSerializer.Serialize(data, options);
+        var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+        var response =
+            await HttpClient.PostAsync($"api/v1/Transfers", content);
+        Console.WriteLine(response.StatusCode);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            if(response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine(errorMessage);
+            }
+            throw new Exception("Error transferring money");
+        }
+        else
+        {
+            if (child == Children.Imre)
+            {
+                _appState.AvailableImre += amount;
+            }
+            else
+            {
+                _appState.AvailableKlara += amount;
+            }
+        }
+    }
 }
+
+public record TransferDto(string FromAccountId, string toAccountId, string Message, int amount);
