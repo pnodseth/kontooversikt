@@ -1,4 +1,5 @@
 ﻿@using BlazorApp.Store
+@using MudBlazor.Utilities
 @inherits LayoutComponentBase
 @inject AppState AppState
 
@@ -28,14 +29,34 @@
 </MudLayout>
 
 @code {
+
     MudTheme _myCustomTheme = new()
     {
         Typography = new Typography()
         {
             Default = new Default()
             {
-                FontFamily = new[] { "Fjalla One", "Helvetica", "Arial", "sans-serif" }
+                FontFamily = new[] {"Fjalla One", "Helvetica", "Arial", "sans-serif"},
+            },
+            Subtitle1 = new Subtitle1()
+            {
+                FontFamily = new[] {"Bangers"},
+                FontSize = "2rem"
+            },
+            Subtitle2 = new Subtitle2()
+            {
+                FontFamily = new[] {"Bangers"},
+                FontSize = "1.5rem"
             }
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Background = "rgba(18,18,18,1)",
+            AppbarBackground = "rgba(18,18,18,1)",
+            TextPrimary = "#FFFFFF",
+            AppbarText = "#FFFFFF",
+            Primary = "#8960c3"
         }
     };
+
 }

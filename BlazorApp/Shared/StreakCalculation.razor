@@ -18,11 +18,12 @@
                     switch (date.Status)
                     {
                         case ChoreStatus.Pending:
-
-                            <MudText>PENDING</MudText>
+                            <MudItem>
+                                <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Default"></MudIcon>
+                            </MudItem>
                             break;
                         case ChoreStatus.Done:
-                            <MudText>COMPLETED</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
                             break;
                     }
                     count++;

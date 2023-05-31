@@ -6,10 +6,12 @@
 
 @if (_activeChallenges.Count == 0)
 {
-    <MudItem sm="12">
-        <MudExpansionPanels>
-            <MudExpansionPanel>
-                <TitleContent>Streak Challenges!</TitleContent>
+    <MudItem sm="12" >
+        <MudExpansionPanels Class="mud-theme-primary">
+            <MudExpansionPanel Class="mud-theme-primary">
+                <TitleContent>
+                    <MudText Typo="Typo.subtitle1"><i>Streak Challenges!</i></MudText>
+                </TitleContent>
                 <ChildContent>
                     <MudGrid>
                         @foreach (var challenge in _templateChallenges)
