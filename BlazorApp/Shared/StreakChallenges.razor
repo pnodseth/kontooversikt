@@ -8,9 +8,9 @@
 
 @if (_activeChallenges.Count == 0)
 {
-    <MudItem sm="12">
+    <MudItem>
         <MudExpansionPanels Class="mud-theme-primary">
-            <MudExpansionPanel Class="mud-theme-primary">
+            <MudExpansionPanel Class="mud-theme-primary" bind-IsExpanded="_isExpanded">
                 <TitleContent>
                     <MudText Typo="Typo.subtitle1">
                         <i>Streak Challenges!</i>
@@ -76,6 +76,7 @@ else
     private List<StreakChallenge>? _templateChallenges;
     private bool _payoutLoading { get; set; }
     protected Blafettis blafettis;
+    private bool _isExpanded { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

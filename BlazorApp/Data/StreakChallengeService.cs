@@ -32,8 +32,8 @@ public class StreakChallengeService
             {
                 Title = "Morgenrutine",
                 Description =
-                    "På morgenen når det er skole skal TV/Ipad/Switch skrus av senest kl 7:30, og da skal du kle på deg og pusse tennene",
-                StreakNumberForCompleted = 1,
+                    "På morgenen når det er skole skal TV/Ipad/Switch skrus av senest kl halv åtte, og da skal du kle på deg og pusse tennene",
+                StreakNumberForCompleted = 5,
                 AmountOnCompletion = 50,
             },
             new StreakChallenge()
@@ -41,7 +41,7 @@ public class StreakChallengeService
                 Title = "Kveldsrutine",
                 Description =
                     "Skru av TV/IPAD/SWTICH senest kl 19, da er skjermtid over, og det er tid for kveldsmat, og gjerne lese bok, eller spille kort eller brettspill",
-                StreakNumberForCompleted = 5,
+                StreakNumberForCompleted = 3,
                 AmountOnCompletion = 50
             },
             new StreakChallenge()
