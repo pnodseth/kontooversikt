@@ -1,22 +1,20 @@
 @using BlazorApp.Data.Models
-<MudItem sm="4" Style="display: flex; align-items: stretch">
-    <MudPaper Style="display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
-        <MudCardHeader >
-            <MudText Style="font-weight: bold">@Challenge.Title</MudText>
+    <MudPaper Style="display: flex; flex-direction: column; justify-content: space-between; width: 100%; height:  100%; background:  none;">
+        <MudCardHeader Style="place-content: center">
+            <MudText Style="font-weight: bold; letter-spacing: 7px" Typo="Typo.subtitle2" Align="Align.Center">@Challenge.Title</MudText>
         </MudCardHeader>
-        <MudCardContent>
-            <MudText>@Challenge.Description</MudText>
-            <MudText> Streak: @Challenge.StreakNumberForCompleted dager på rad</MudText>
+        <MudCardContent Style="padding: 16px 50px; place-content: center">
+            <MudText Align="Align.Center">@Challenge.Description</MudText>
+            <MudText Align="Align.Center" Style="font-weight: bold" Class="mt-4"> Streak: @Challenge.StreakNumberForCompleted dager på rad</MudText>
 
         </MudCardContent>
         <MudCardActions Style="justify-content: space-between;">
-            <MudButton Variant="Variant.Filled" Color="Color.Warning" @onclick="() => OnCreateStreakChallenge(Challenge)">
-                <MudText Typo="Typo.subtitle2">Ta Utfordring</MudText>
-            </MudButton>
             <MudText Typo="Typo.h5" Style="font-weight: bold"> @Challenge.AmountOnCompletion kr</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" @onclick="() => OnCreateStreakChallenge(Challenge)">
+                <MudText Typo="Typo.subtitle2">START</MudText>
+            </MudButton>
         </MudCardActions>
     </MudPaper>
-</MudItem>
 
 @code {
     [Parameter]

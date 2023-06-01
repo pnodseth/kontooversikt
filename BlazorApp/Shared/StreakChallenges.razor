@@ -8,24 +8,19 @@
 
 @if (_activeChallenges.Count == 0)
 {
-    <MudItem>
-        <MudExpansionPanels Class="mud-theme-primary">
-            <MudExpansionPanel Class="mud-theme-primary" bind-IsExpanded="_isExpanded">
-                <TitleContent>
-                    <MudText Typo="Typo.subtitle1">
-                        <i>Streak Challenges!</i>
-                    </MudText>
-                </TitleContent>
-                <ChildContent>
-                    <MudGrid>
-                        @foreach (var challenge in _templateChallenges)
-                        {
-                            <StreakChallengeTemplate Challenge="challenge" CreateStreakChallenge="CreateStreakChallenge"></StreakChallengeTemplate>
-                        }
-                    </MudGrid>
-                </ChildContent>
-            </MudExpansionPanel>
-        </MudExpansionPanels>
+    <MudItem sm="6">
+        <MudText Typo="Typo.subtitle1">
+            <i>Streak Challenges!</i>
+        </MudText>
+        <MudCarousel Class="mud-width-full" Style="height:285px;" ShowArrows="@arrows" ShowBullets="@bullets" EnableSwipeGesture="@enableSwipeGesture" AutoCycle="@autocycle" TData="object">
+            @foreach (var challenge in _templateChallenges)
+            {
+                <MudCarouselItem Transition="transition" Color="@Color.Primary">
+                    <StreakChallengeTemplate Challenge="challenge" CreateStreakChallenge="CreateStreakChallenge"></StreakChallengeTemplate>
+                </MudCarouselItem>
+            }
+
+        </MudCarousel>
     </MudItem>
 }
 else
@@ -76,7 +71,11 @@ else
     private List<StreakChallenge>? _templateChallenges;
     private bool _payoutLoading { get; set; }
     protected Blafettis blafettis;
-    private bool _isExpanded { get; set; }
+    private Transition transition = Transition.Slide;
+    private bool arrows = true;
+    private bool bullets = true;
+    private bool enableSwipeGesture = true;
+    private bool autocycle = false;
 
     protected override async Task OnInitializedAsync()
     {
