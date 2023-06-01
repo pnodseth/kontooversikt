@@ -1,0 +1,98 @@
+@page "/parent-weeklychores"
+@using BlazorApp.Store
+@using BlazorApp.Data
+@using BlazorApp.Data.Models
+@inject AppState AppState
+@inject ChoreService ChoreService
+<MudGrid>
+    <MudItem sm-6>
+        <MudText>Imre</MudText>
+        <MudText>Husarbeid denne uken:</MudText>
+        @if (WeeklyChoresImre is not null)
+        {
+            @foreach (var chore in WeeklyChoresImre.Chores)
+            {
+                <MudGrid>
+                    <MudItem>@chore.Title</MudItem>
+                    <MudItem>@chore.Amount</MudItem>
+                    @if (chore.Status == ChoreStatus.Pending)
+                    {
+                        <MudItem >
+                            <MudButton @onclick="() => ApproveChore(chore.Id, WeeklyChoresImre)">Godkjenn</MudButton>
+                        </MudItem>
+                    }
+                    @if (chore.Status == ChoreStatus.Done)
+                    {
+                        <MudItem>
+                            <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        }
+        
+        
+
+
+    </MudItem>
+    <MudItem>
+        @if (WeeklyChoresKlara is not null)
+                {
+                    @foreach (var chore in WeeklyChoresKlara.Chores)
+                    {
+                        <MudGrid>
+                            <MudItem>@chore.Title</MudItem>
+                            <MudItem>@chore.Amount</MudItem>
+                            @if (chore.Status == ChoreStatus.Pending)
+                            {
+                                <MudItem >
+                                    <MudButton @onclick="() => ApproveChore(chore.Id, WeeklyChoresKlara)">Godkjenn</MudButton>
+                                </MudItem>
+                            }
+                            @if (chore.Status == ChoreStatus.Done)
+                            {
+                                <MudItem>
+                                    <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                }
+    </MudItem>
+</MudGrid>
+
+@code {
+    private WeeklyChores? WeeklyChoresImre { get; set; }
+    private WeeklyChores? WeeklyChoresKlara { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        WeeklyChoresImre = await ChoreService.GetChoresThisWeek(AppState.GetChildFromName("Imre"));
+        WeeklyChoresKlara = await ChoreService.GetChoresThisWeek(AppState.GetChildFromName("Klara"));
+        StateHasChanged();
+    }
+
+
+    private async Task ApproveChore(int id, WeeklyChores weeklyChores)
+    {
+        try
+        {
+            Console.WriteLine("saving");
+            await ChoreService.SetChoreStatus(id, ChoreStatus.Done);
+    // todo: Check if I need to fetch chores again for state to be updated correctly.
+            StateHasChanged();
+
+            if (weeklyChores.Chores.Sum(e => e.Status == ChoreStatus.Done ? 1 : 0) == weeklyChores.Chores.Count)
+            {
+                Console.WriteLine("All weekly chores are done!");
+                await ChoreService.SetWeeklyChoresDone(weeklyChores.Id);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+}

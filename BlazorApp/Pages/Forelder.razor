@@ -3,91 +3,52 @@
 @using BlazorApp.Data
 @using BlazorApp.Data.Models
 @inject AppState AppState
-@inject ChoreService ChoreService
+@inject StreakChallengeService StreakChallengeService
 <MudGrid>
     <MudItem sm-6>
-        <MudText>Imre</MudText>
-        <MudText>Husarbeid denne uken:</MudText>
-        @if (WeeklyChoresImre is not null)
+        @foreach (var challenge in ActiveChallengesImre)
         {
-            @foreach (var chore in WeeklyChoresImre.Chores)
+            <MudText Typo="Typo.subtitle1">@challenge.Title</MudText>
+            @foreach (var date in challenge.DatesCompleted)
             {
-                <MudGrid>
-                    <MudItem>@chore.Title</MudItem>
-                    <MudItem>@chore.Amount</MudItem>
-                    @if (chore.Status == ChoreStatus.Pending)
-                    {
-                        <MudItem >
-                            <MudButton @onclick="() => ApproveChore(chore.Id, WeeklyChoresImre)">Godkjenn</MudButton>
-                        </MudItem>
-                    }
-                    @if (chore.Status == ChoreStatus.Done)
-                    {
-                        <MudItem>
-                            <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
-                        </MudItem>
-                    }
-                </MudGrid>
+                if (date.Status == ChoreStatus.Pending)
+                {
+                    <MudText>@date.DateCompleted.Date.DayOfWeek @date.DateCompleted.Day.@date.DateCompleted.Month</MudText>
+                    <MudButton @onclick="() => ApproveDate(date, challenge.Id, ChoreStatus.Done)" Variant="Variant.Outlined">Approve</MudButton>
+                    <MudButton @onclick="() => ApproveDate(date, challenge.Id, ChoreStatus.Rejected)" Variant="Variant.Outlined">Reject</MudButton>
+                }
+                else
+                {
+                    <MudText>@date.DateCompleted.Date: @date.Status</MudText>
+                }
             }
         }
-        
-        
-
-
     </MudItem>
-    <MudItem>
-        @if (WeeklyChoresKlara is not null)
-                {
-                    @foreach (var chore in WeeklyChoresKlara.Chores)
-                    {
-                        <MudGrid>
-                            <MudItem>@chore.Title</MudItem>
-                            <MudItem>@chore.Amount</MudItem>
-                            @if (chore.Status == ChoreStatus.Pending)
-                            {
-                                <MudItem >
-                                    <MudButton @onclick="() => ApproveChore(chore.Id, WeeklyChoresKlara)">Godkjenn</MudButton>
-                                </MudItem>
-                            }
-                            @if (chore.Status == ChoreStatus.Done)
-                            {
-                                <MudItem>
-                                    <MudIcon Icon="@Icons.Material.Filled.Check"></MudIcon>
-                                </MudItem>
-                            }
-                        </MudGrid>
-                    }
-                }
-    </MudItem>
+    
 </MudGrid>
 
 @code {
-    private WeeklyChores? WeeklyChoresImre { get; set; }
-    private WeeklyChores? WeeklyChoresKlara { get; set; }
+    private List<StreakChallenge> ActiveChallengesImre { get; set; } = new();
+    private List<StreakChallenge> ActiveChallengesKlara { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        WeeklyChoresImre = await ChoreService.GetChoresThisWeek(AppState.GetChildFromName("Imre"));
-        WeeklyChoresKlara = await ChoreService.GetChoresThisWeek(AppState.GetChildFromName("Klara"));
+        ActiveChallengesImre = await StreakChallengeService.GetActiveChallenges(Children.Imre);
+        ActiveChallengesKlara = await StreakChallengeService.GetActiveChallenges(Children.Klara);
+        
         StateHasChanged();
     }
 
 
-    private async Task ApproveChore(int id, WeeklyChores weeklyChores)
+    private async Task ApproveDate(StreakChallengeDate date, int challengeId, ChoreStatus choreStatus)
     {
         try
         {
-            Console.WriteLine("saving");
-            await ChoreService.SetChoreStatus(id, ChoreStatus.Done);
-    // todo: Check if I need to fetch chores again for state to be updated correctly.
+            await StreakChallengeService.ApproveDate(date, challengeId, choreStatus);
+            ActiveChallengesImre = await StreakChallengeService.GetActiveChallenges(Children.Imre);
+            ActiveChallengesKlara = await StreakChallengeService.GetActiveChallenges(Children.Klara);
+        
             StateHasChanged();
-
-            if (weeklyChores.Chores.Sum(e => e.Status == ChoreStatus.Done ? 1 : 0) == weeklyChores.Chores.Count)
-            {
-                Console.WriteLine("All weekly chores are done!");
-                await ChoreService.SetWeeklyChoresDone(weeklyChores.Id);
-            }
-
         }
         catch (Exception ex)
         {

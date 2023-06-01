@@ -3,14 +3,18 @@
 @using BlazorApp.Store
 @inject AppState AppState
 @inject StreakChallengeService StreakChallengeService
+@using BlafettisLib
+
 
 @if (_activeChallenges.Count == 0)
 {
-    <MudItem sm="12" >
+    <MudItem sm="12">
         <MudExpansionPanels Class="mud-theme-primary">
             <MudExpansionPanel Class="mud-theme-primary">
                 <TitleContent>
-                    <MudText Typo="Typo.subtitle1"><i>Streak Challenges!</i></MudText>
+                    <MudText Typo="Typo.subtitle1">
+                        <i>Streak Challenges!</i>
+                    </MudText>
                 </TitleContent>
                 <ChildContent>
                     <MudGrid>
@@ -29,7 +33,7 @@ else
     <MudItem sm="6">
         @foreach (var streakChallenge in _activeChallenges)
         {
-            <MudCard Outlined="true" Elevation="2">
+            <MudCard Outlined="true" Elevation="2" Style="position: relative">
                 <MudCardHeader >
                     <MudText Class="mr-4" Typo="Typo.subtitle2">Streak Challenge:</MudText>
                     <MudText Align="Align.Left" Typo="Typo.subtitle2">@streakChallenge.Title</MudText>
@@ -37,24 +41,41 @@ else
                 <MudCardContent Class="pt-0">
                     @if (streakChallenge.HasAchievedTargetStreak)
                     {
-                        <MudText GutterBottom="true">Du har fullført, gratulerer! Bra jobba :) :) </MudText>
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="() => Payout(streakChallenge.Id)">FÅ PREMIEN</MudButton>
+                        <MudText GutterBottom="true" Class="pb-4">Du har fullført, gratulerer!</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Warning" @onclick="() => Payout(streakChallenge.Id)" FullWidth="true" Disabled="_payoutLoading">
+                            @if (_payoutLoading)
+                            {
+                                <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.subtitle2">GI MEG PREMIEN - @streakChallenge.AmountOnCompletion KR</MudText>
+                            }
+                        </MudButton>
                     }
                     else
                     {
-                    <MudText Align="Align.Left" Style="font-weight: bold">@streakChallenge.Description</MudText>
+                        <MudText Align="Align.Left" Style="font-weight: bold">@streakChallenge.Description</MudText>
                         <StreakCalculation StreakChallenge="streakChallenge" AddStreakDate="AddStreakDate"></StreakCalculation>
                     }
+
                 </MudCardContent>
             </MudCard>
         }
+
     </MudItem>
 }
+@*<MudButton @onclick="ConfettiNow">Confetti</MudButton>*@
+<div style="position: absolute; bottom: 0; left:  50%;">
+    <Blafettis @ref="blafettis" duration="6000"/>
+</div>
 
 @code {
 
     private List<StreakChallenge> _activeChallenges = new();
     private List<StreakChallenge>? _templateChallenges;
+    private bool _payoutLoading { get; set; }
+    protected Blafettis blafettis;
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,9 +111,28 @@ else
 
     private async Task Payout(int id)
     {
-        await StreakChallengeService.Payout(id);
-        _activeChallenges = await StreakChallengeService.GetActiveChallenges(AppState.CurrentChild);
-        StateHasChanged();
+        try
+        {
+            _payoutLoading = true;
+            await StreakChallengeService.Payout(id);
+            _activeChallenges = await StreakChallengeService.GetActiveChallenges(AppState.CurrentChild);
+            StateHasChanged();
+            blafettis.RaiseConfetti();
+        }
+        catch (Exception ex)
+        {
+    // todo Implement Dialog
+            Console.WriteLine($"Payout error: {ex.Message}");
+        }
+        finally
+        {
+            _payoutLoading = false;
+        }
+    }
+
+    private void ConfettiNow()
+    {
+        blafettis.RaiseConfetti();
     }
 
 }

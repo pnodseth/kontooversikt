@@ -3,7 +3,7 @@
     <MudText Typo="Typo.subtitle2">Din Streak</MudText>
     <MudGrid Style="position: relative">
         <MudItem Style="height: 48px">
-            <MudGrid Justify="Justify.SpaceBetween">
+            <MudGrid Justify="Justify.SpaceBetween" Style="position: relative">
                 @{
                     var streakList = StreakChallenge.GetCurrentStreak();
                 }
@@ -25,7 +25,9 @@
                     }
                     else
                     {
-                        <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
+                        <MudItem>
+                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
+                        </MudItem>
                     }
                 }
             </MudGrid>
@@ -34,7 +36,13 @@
         @if (StreakChallenge.DatesCompleted.All(date => date.DateCompleted.Date != DateTime.Today))
         {
             <MudItem Style="position: absolute; bottom: 0; right: 0;">
-                <MudButton Color="Color.Success" Variant="Variant.Outlined" @onclick="() => OnAddStreakDate(StreakChallenge.Id)">Fullført</MudButton>
+                <MudButton Color="Color.Warning" Variant="Variant.Outlined" @onclick="() => OnAddStreakDate(StreakChallenge.Id)">Fullført</MudButton>
+            </MudItem>
+        }
+        else
+        {
+            <MudItem Style="position: absolute; bottom: 8px; right:  16px;">
+                <MudText Typo="Typo.subtitle2" Color="Color.Warning">@StreakChallenge.AmountOnCompletion kr</MudText>
             </MudItem>
         }
     </MudGrid>
