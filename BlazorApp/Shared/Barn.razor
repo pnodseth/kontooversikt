@@ -10,12 +10,13 @@
 <MudGrid Class="pt-8">
     @*<UkesOppgaver Name="@AppState.GetNameString()"/>*@
     <StreakChallenges></StreakChallenges>
-    <KontoOversikt Name="@AppState.GetNameString()"  account="@_account"></KontoOversikt>
+    <SingleChallenges></SingleChallenges>
+    <KontoOversikt Name="@AppState.GetNameString()" account="@_account"></KontoOversikt>
 </MudGrid>
 
 @code {
     private AccountItem? _account;
-    
+
     protected override void OnInitialized()
     {
         AppState.OnChange += StateHasChanged;
@@ -25,7 +26,7 @@
     {
         AppState.SetCurrentNameFromUri(NavigationManager);
         AppState.Loading = true;
-        
+
         await AccountsService.Connect();
         var account = await AccountsService.GetAccountInfo(AppState.GetNameString());
         if (account != null)

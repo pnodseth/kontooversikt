@@ -1,0 +1,21 @@
+<MudItem sm="6">
+    <MudText Typo="Typo.subtitle1">
+        <i>Single Challenges</i>
+    </MudText>
+    <MudCarousel Class="mud-width-full" Style="height:285px;" ShowArrows="@arrows" ShowBullets="@bullets" EnableSwipeGesture="@enableSwipeGesture" AutoCycle="@autocycle" TData="object">
+
+        <MudCarouselItem Transition="transition" Color="@Color.Secondary">
+            <MudText>Here</MudText>
+        </MudCarouselItem>
+
+
+    </MudCarousel>
+</MudItem>
+
+@code {
+    private Transition transition = Transition.Slide;
+    private bool arrows = true;
+    private bool bullets = true;
+    private bool enableSwipeGesture = true;
+    private bool autocycle = false;
+}
