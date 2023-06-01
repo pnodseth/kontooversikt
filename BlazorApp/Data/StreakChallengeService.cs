@@ -24,9 +24,9 @@ public class StreakChallengeService
 
     }
 
-    public async Task<List<StreakChallenge>> GetStreakChallengeTemplates()
+    public Task<List<StreakChallenge>> GetStreakChallengeTemplates()
     {
-        return new List<StreakChallenge>()
+        return Task.FromResult(new List<StreakChallenge>()
         {
             new StreakChallenge()
             {
@@ -52,7 +52,7 @@ public class StreakChallengeService
                 StreakNumberForCompleted = 5,
                 AmountOnCompletion = 30
             },
-        };
+        });
 
     }
        public async Task CreateStreakChallenge(StreakChallenge challenge)
@@ -77,7 +77,7 @@ public class StreakChallengeService
            }
            challenge.DatesCompleted.Add(date);
            
-           if (challenge.GetCurrentStreak() >= challenge.StreakNumberForCompleted)
+           if (challenge.GetCurrentStreak().Count >= challenge.StreakNumberForCompleted)
            {
                challenge.HasAchievedTargetStreak = true;
            }

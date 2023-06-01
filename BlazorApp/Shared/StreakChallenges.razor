@@ -30,11 +30,11 @@ else
         @foreach (var streakChallenge in _activeChallenges)
         {
             <MudCard Outlined="true" Elevation="2">
-                <MudCardHeader>
-                    <MudText Class="mr-4">Streak Challenge:</MudText>
-                    <MudText Align="Align.Center" Typo="Typo.h5">@streakChallenge.Title</MudText>
+                <MudCardHeader >
+                    <MudText Class="mr-4" Typo="Typo.subtitle2">Streak Challenge:</MudText>
+                    <MudText Align="Align.Left" Typo="Typo.subtitle2">@streakChallenge.Title</MudText>
                 </MudCardHeader>
-                <MudCardContent>
+                <MudCardContent Class="pt-0">
                     @if (streakChallenge.HasAchievedTargetStreak)
                     {
                         <MudText GutterBottom="true">Du har fullført, gratulerer! Bra jobba :) :) </MudText>
@@ -42,7 +42,7 @@ else
                     }
                     else
                     {
-                    <MudText Align="Align.Center">@streakChallenge.Description</MudText>
+                    <MudText Align="Align.Left" Style="font-weight: bold">@streakChallenge.Description</MudText>
                         <StreakCalculation StreakChallenge="streakChallenge" AddStreakDate="AddStreakDate"></StreakCalculation>
                     }
                 </MudCardContent>

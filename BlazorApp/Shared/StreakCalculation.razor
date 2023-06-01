@@ -1,55 +1,56 @@
 @using BlazorApp.Data.Models
-<MudContainer>
-    <MudText Typo="Typo.h6">Streak</MudText>
-    <MudGrid>
-        <MudItem>
+<div class="mt-4">
+    <MudText Typo="Typo.subtitle2">Din Streak</MudText>
+    <MudGrid Style="position: relative">
+        <MudItem Style="height: 48px">
             <MudGrid Justify="Justify.SpaceBetween">
                 @{
-                    var streakCount = StreakChallenge.GetCurrentStreak();
-                    var count = 0;
+                    var streakList = StreakChallenge.GetCurrentStreak();
                 }
-                @foreach (var date in StreakChallenge.DatesCompleted.OrderByDescending(x => x.DateCompleted))
+                @foreach (var number in Enumerable.Range(0, StreakChallenge.StreakNumberForCompleted))
                 {
-                    if (count >= streakCount)
-                    {
-                        break;
-                    }
+                    var status = number < streakList.Count ? streakList[number] : (ChoreStatus?) null;
 
-                    switch (date.Status)
+                    if (status == null)
                     {
-                        case ChoreStatus.Pending:
-                            <MudItem>
-                                <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Default"></MudIcon>
-                            </MudItem>
-                            break;
-                        case ChoreStatus.Done:
-                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
-                            break;
+                        <MudItem>
+                            <MudIcon Icon="@Icons.Material.Outlined.Square" Color="Color.Default"></MudIcon>
+                        </MudItem>
                     }
-                    count++;
+                    else if (status == ChoreStatus.Pending)
+                    {
+                        <MudItem>
+                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Default"></MudIcon>
+                        </MudItem>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
+                    }
                 }
             </MudGrid>
 
         </MudItem>
         @if (StreakChallenge.DatesCompleted.All(date => date.DateCompleted.Date != DateTime.Today))
         {
-            <MudItem>
+            <MudItem Style="position: absolute; bottom: 0; right: 0;">
                 <MudButton Color="Color.Success" Variant="Variant.Outlined" @onclick="() => OnAddStreakDate(StreakChallenge.Id)">Fullført</MudButton>
             </MudItem>
-            
         }
     </MudGrid>
-</MudContainer>
+</div>
 
 @code {
+
     [Parameter]
     public required StreakChallenge StreakChallenge { get; set; }
-    
+
     [Parameter]
     public EventCallback<int> AddStreakDate { get; set; }
-    
+
     private async Task OnAddStreakDate(int id)
     {
         await AddStreakDate.InvokeAsync(id);
     }
+
 }

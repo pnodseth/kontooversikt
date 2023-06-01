@@ -18,34 +18,38 @@ public class StreakChallenge
     public bool HasBeenPaid { get; set; }
     public Children? Child { get; set; }
     
-    public int GetCurrentStreak()
+    public List<ChoreStatus> GetCurrentStreak()
     {
         var validDates = DatesCompleted.Where(x => x.Status == ChoreStatus.Done || x.Status == ChoreStatus.Pending).ToList();
         if (!validDates.Any())
         {
-            return 0;
+            return new List<ChoreStatus>();
         }
 
         validDates.Sort((a, b) => b.DateCompleted.CompareTo(a.DateCompleted));
 
-        int currentStreak = 1;  // Start from 1 as we always count the current day in the streak
+        List<ChoreStatus> currentStreak = new List<ChoreStatus>();  // Start from an empty list
 
-        for (var i = 1; i < validDates.Count; i++)
+        for (var i = 0; i < validDates.Count; i++)
         {
-            if ((validDates[i-1].DateCompleted.Date - validDates[i].DateCompleted.Date).Days == 1)
+            if (i > 0 && (validDates[i-1].DateCompleted.Date - validDates[i].DateCompleted.Date).Days != 1)
             {
-                if (validDates[i].Status == ChoreStatus.Rejected)
-                {
-                    break;
-                }
-                currentStreak++;
+                break;
             }
-            else
+            if (validDates[i].Status == ChoreStatus.Rejected)
+            {
+                break;
+            }
+            currentStreak.Add(validDates[i].Status);
+
+            // If the streak has reached the target length, stop adding
+            if (currentStreak.Count >= StreakNumberForCompleted)
             {
                 break;
             }
         }
 
+        currentStreak.Reverse(); // Reverse the list to start with the first day of the current streak
         return currentStreak;
-    }
+    }   
 }
