@@ -1,0 +1,30 @@
+@using BlazorApp.Data.Models
+
+<MudPaper Style="display: flex; flex-direction: column; justify-content: space-between; width: 100%; height:  100%; background:  none;">
+    <MudCardHeader Style="place-content: center">
+        <MudText Style="font-weight: bold; letter-spacing: 7px" Typo="Typo.subtitle2" Align="Align.Center">@Challenge.Title</MudText>
+    </MudCardHeader>
+    <MudCardContent Style="padding: 16px 50px; place-content: center">
+        <MudText Align="Align.Center">@Challenge.Description</MudText>
+        <MudText Typo="Typo.subtitle1" Style="font-weight: bold; font-size: 4rem;" Align="Align.Center" > @Challenge.AmountOnCompletion kr</MudText>
+    </MudCardContent>
+    <MudCardActions Style="justify-content: flex-end;">
+        @*<MudText Typo="Typo.h5" Style="font-weight: bold"> @Challenge.AmountOnCompletion kr</MudText>*@
+        <MudButton Variant="Variant.Filled" Color="Color.Success" @onclick="() => OnCreateSingleChallenge(Challenge)">
+            <MudText Typo="Typo.subtitle2">START DENNE</MudText>
+        </MudButton>
+    </MudCardActions>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public required SingleChallenge Challenge { get; set; }
+    
+    [Parameter]
+    public EventCallback<SingleChallenge> CreateSingleChallenge { get; set; }
+
+    private async Task OnCreateSingleChallenge(SingleChallenge challenge)
+    {
+        await CreateSingleChallenge.InvokeAsync(challenge);
+    }
+}

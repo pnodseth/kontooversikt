@@ -4,8 +4,10 @@
 @using BlazorApp.Data.Models
 @inject AppState AppState
 @inject StreakChallengeService StreakChallengeService
+@inject SingleChallengeService SingleChallengeService
 <MudGrid>
     <MudItem sm-6>
+        <MudText Typo="Typo.subtitle1">Imre Streak Challenges</MudText>
         @foreach (var challenge in ActiveChallengesImre)
         {
             <MudText Typo="Typo.subtitle1">@challenge.Title</MudText>
@@ -24,18 +26,32 @@
             }
         }
     </MudItem>
-    
+    <MudItem sm-6>
+        <MudText Typo="Typo.subtitle1">Imre Single Challenges</MudText>
+        @if (SingleChallengeImre is not null)
+        {
+            <MudText Typo="Typo.subtitle1">@SingleChallengeImre.Title</MudText>
+            @if (SingleChallengeImre.Status == ChoreStatus.Pending)
+            {
+                <MudButton @onclick="() => UpdateSingleChallengeStatus(SingleChallengeImre.Id, ChoreStatus.Done)" Variant="Variant.Outlined">Approve</MudButton>
+                <MudButton @onclick="() => UpdateSingleChallengeStatus(SingleChallengeImre.Id, ChoreStatus.Rejected)" Variant="Variant.Outlined">Reject</MudButton>
+            }
+        }
+    </MudItem>
+
 </MudGrid>
 
 @code {
     private List<StreakChallenge> ActiveChallengesImre { get; set; } = new();
     private List<StreakChallenge> ActiveChallengesKlara { get; set; } = new();
+    private SingleChallenge? SingleChallengeImre { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         ActiveChallengesImre = await StreakChallengeService.GetActiveChallenges(Children.Imre);
         ActiveChallengesKlara = await StreakChallengeService.GetActiveChallenges(Children.Klara);
-        
+        SingleChallengeImre = await SingleChallengeService.GetActiveChallenge(Children.Imre);
+
         StateHasChanged();
     }
 
@@ -47,7 +63,21 @@
             await StreakChallengeService.ApproveDate(date, challengeId, choreStatus);
             ActiveChallengesImre = await StreakChallengeService.GetActiveChallenges(Children.Imre);
             ActiveChallengesKlara = await StreakChallengeService.GetActiveChallenges(Children.Klara);
-        
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    
+    private async Task UpdateSingleChallengeStatus(int challengeId, ChoreStatus choreStatus)
+    {
+        try
+        {
+            await SingleChallengeService.SetStatus(challengeId, choreStatus);
+            SingleChallengeImre = await SingleChallengeService.GetActiveChallenge(Children.Imre);
             StateHasChanged();
         }
         catch (Exception ex)

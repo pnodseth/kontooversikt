@@ -13,6 +13,7 @@ public class MyDbContext : DbContext
     public DbSet<WeeklyChores> WeeklyChoresEnumerable { get; set; } = null!;
     public DbSet<StreakChallenge> StreakChallenges { get; set; } = null!;
     public DbSet<StreakChallengeDate> StreakChallengesDates { get; set; } = null!;
+    public DbSet<SingleChallenge> SingleChallenges { get; set; }
 
 
 }
